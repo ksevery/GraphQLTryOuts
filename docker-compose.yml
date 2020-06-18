@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+    # graphql_rabbitmq:
+    #     image: rabbitmq:3-management-alpine
+
+    graphql_sqldata:
+        image: mcr.microsoft.com/mssql/server:2017-latest
+
+    graphql_identity:
+        build:
+            context: .
+            dockerfile: GraphQLTryOuts.Identity/Dockerfile
+        depends_on: 
+            - graphql_sqldata
+
+    graphql_webclient:
+        build:
+            context: .
+            dockerfile: GraphQLTryOuts.WebClient/Dockerfile
+        depends_on:
+            - graphql_identity 
+
+    graphql_usersapi:
+        build:
+            context: .
+            dockerfile: GraphQLTryOuts.Users/Dockerfile
+        depends_on: 
+            - graphql_identity
+    
+    graphql_meetingsapi:
+        build: 
+            context: .
+            dockerfile: GraphQLTryOuts.Meetings/Dockerfile
+        depends_on: 
+            - graphql_identity
+            - graphql_sqldata
+
+    graphql_mqtt:
+        build:
+            context: .
+            dockerfile: GraphQLTryOuts.MessagingServer/Dockerfile

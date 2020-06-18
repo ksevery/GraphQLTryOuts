@@ -1,0 +1,70 @@
+version: '3.8'
+
+services: 
+    # graphql_rabbitmq:
+    #     ports: 
+    #         - "5672:5672"
+    #         - "15672:15672"
+
+    graphql_sqldata:
+        environment:
+            - SA_PASSWORD=Pass@word
+            - ACCEPT_EULA=Y
+        ports:
+            - "5433:1433"
+        volumes:
+            - graphql-tryouts-sqldata:/var/opt/mssql
+
+    graphql_identity:
+        environment: 
+            - ConnectionStrings__DefaultConnection=Server=graphql_sqldata;Database=GraphQLTryOuts.Identity;User Id=sa;Password=Pass@word
+            - ASPNETCORE_ENVIRONMENT=Development
+            - MqttSetup__Username=${GRAPHQL_MQTT_USERNAME}
+            - MqttSetup__UserPassword=${GRAPHQL_MQTT_PASSWORD}
+            - MqttSetup__Server=${GRAPHQL_DOCKER_IP}
+            - MqttSetup__ClientId=identity
+            - MqttSetup__UserMessagesTopic=backend/users
+        ports: 
+            - "5101:80"
+
+    graphql_webclient:
+        environment: 
+            - Authority=http://${GRAPHQL_DOCKER_IP}:5101
+            - ASPNETCORE_ENVIRONMENT=Development
+        ports: 
+            - "5102:80"
+
+    graphql_usersapi:
+        environment: 
+            - ConnectionStrings__DefaultConnection=Server=graphql_sqldata;Database=GraphQLTryOuts.Users;User Id=sa;Password=Pass@word
+            - Authority=http://${GRAPHQL_DOCKER_IP}:5101
+            - ASPNETCORE_ENVIRONMENT=Development
+            - MqttSetup__Username=${GRAPHQL_MQTT_USERNAME}
+            - MqttSetup__UserPassword=${GRAPHQL_MQTT_PASSWORD}
+            - MqttSetup__Server=${GRAPHQL_DOCKER_IP}
+            - MqttSetup__ClientId=usersApi
+            - MqttSetup__UserMessagesTopic=backend/users
+        ports: 
+            - "5201:80"
+    
+    graphql_meetingsapi:
+        environment: 
+            - Authority=http://${GRAPHQL_DOCKER_IP}:5101
+            - ASPNETCORE_ENVIRONMENT=Development
+            - ConnectionStrings__DefaultConnection=Server=graphql_sqldata;Database=GraphQLTryOuts.Meetings;User Id=sa;Password=Pass@word
+        ports: 
+            - "5202:80"
+
+    graphql_mqtt:
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Development
+            - Authority=http://${GRAPHQL_DOCKER_IP}:5101
+            - MqttSetup__ConnectionUsername=${GRAPHQL_MQTT_USERNAME}
+            - MqttSetup__ConnectionPassword=${GRAPHQL_MQTT_PASSWORD}
+        ports:
+            - "1883:1883"
+            - "5000:5000"
+    
+volumes:
+    graphql-tryouts-sqldata:
+        external: false

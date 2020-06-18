@@ -1,0 +1,30 @@
+﻿@using Microsoft.AspNetCore.Authentication
+
+@{
+    ViewData["Title"] = "Claims";
+}
+
+<h1>User Claims</h1>
+
+<div class="row">
+    <h4>API Calls</h4>
+    <ul class="list-group">
+        @*<li class="list-group-item"><a asp-controller="Home" asp-action="CallApiUsingUserAccessToken">Call API with user token</a></li>
+        <li class="list-group-item"><a asp-controller="Home" asp-action="CallApiUsingApplicationIdentity">Call API with application identity</a></li>*@
+        @*<li class="list-group-item"><a asp-controller="Home" asp-action="GetUsers">Call API to get users(hardcoded search value)</a></li>*@
+    </ul>
+</div>
+
+<dl>
+    @foreach (var claim in User.Claims)
+    {
+        <dt>@claim.Type</dt>
+        <dd>@claim.Value</dd>
+    }
+
+    <dt>access token</dt>
+    <dd>@await ViewContext.HttpContext.GetTokenAsync("access_token")</dd>
+
+    <dt>refresh token</dt>
+    <dd>@await ViewContext.HttpContext.GetTokenAsync("refresh_token")</dd>
+</dl>
